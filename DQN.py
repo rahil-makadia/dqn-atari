@@ -34,11 +34,8 @@ class neural_net(nn.Module):
         """
         super(neural_net, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, 32, kernel_size=8, stride=4)
-        # self.bn1 = nn.BatchNorm2d(32)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
-        # self.bn2 = nn.BatchNorm2d(64)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
-        # self.bn3 = nn.BatchNorm2d(64)
         self.fc4 = nn.Linear(7 * 7 * 64, 512)
         self.head = nn.Linear(512, n_actions)
         
@@ -197,7 +194,7 @@ class DQN:
         env.close()
         return
     
-    def plot(self):
+    def plot(self, logarithmic=False):  # sourcery skip: extract-duplicate-method
         import matplotlib.pyplot as plt
         log = self.log
         fig, ax = plt.subplots(1, 3, figsize=(20, 5))
@@ -210,7 +207,9 @@ class DQN:
         ax[2].plot(log['episode'], log['loss'], '.')
         ax[2].set_title('Loss')
         ax[2].set_xlabel('Episode #')
-        plt.savefig('training_per_episode.png', dpi=300, bbox_inches='tight')
+        if logarithmic:
+            ax[2].set_yscale('log')
+        plt.savefig(f'training_per_episode_log_{logarithmic}.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         fig, ax = plt.subplots(1, 3, figsize=(20, 5))
@@ -223,6 +222,11 @@ class DQN:
         ax[2].plot(log['steps_done'], log['loss'], '.')
         ax[2].set_title('Loss')
         ax[2].set_xlabel('Steps Done')
-        plt.savefig('training_per_step.png', dpi=300, bbox_inches='tight')
+        if logarithmic:
+            ax[0].set_xscale('log')
+            ax[1].set_xscale('log')
+            ax[2].set_xscale('log')
+            ax[2].set_yscale('log')
+        plt.savefig(f'training_per_step_log_{logarithmic}.png', dpi=300, bbox_inches='tight')
         plt.show()
         return
