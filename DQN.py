@@ -160,25 +160,24 @@ class DQN:
 
                 if done:
                     break
-            if episode % 20 == 0:
+            if episode % 1 == 0:
                 print(
                     f'Total steps: {self.steps_done} \t Episode: {episode}/{t+1} \t Total reward: {total_reward}'
                 )
         env.close()
         return
 
-    def test(self, env, n_episodes, policy, render=True):
+    def test(self, env, n_episodes, policy=None, render=True, name='env_screen.png'):
         for episode in range(n_episodes):
             obs, info = env.reset()
             state = self.get_state(obs)
             total_reward = 0.0
             for _ in count():
-                action = policy(state.to(self.device)).max(1)[1].view(1,1)
+                if policy is not None:
+                    action = policy(state.to(self.device)).max(1)[1].view(1,1)
+                else:
+                    action = env.action_space.sample()
 
-                # if render:
-                #     env_screen = env.render('human')
-                #     plt.imshow(env_screen)
-                #     plt.savefig('env_screen.png')
                 obs, reward, terminated, truncated, info = env.step(action)
                 done = terminated or truncated
 
@@ -190,6 +189,7 @@ class DQN:
                 if done:
                     print(f"Finished Episode {episode} with reward {total_reward}")
                     break
+        env.reset()
         env.close()
         return
     
