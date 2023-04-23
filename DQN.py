@@ -17,7 +17,7 @@ GAMMA = 0.99
 EPS_START = 1
 EPS_END = 0.02
 EPS_DECAY = 1000000
-TARGET_UPDATE = 1000
+TARGET_UPDATE = 10000
 RENDER = False
 lr = 1e-4
 INITIAL_MEMORY = 10000
@@ -118,7 +118,7 @@ class DQN:
         for param in self.policy_net.parameters():
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
-        return loss.detach().cpu().numpy()
+        return loss.detach().cpu().numpy().item()
 
     def get_state(self, obs):
         state = np.array(obs)
@@ -154,16 +154,15 @@ class DQN:
                     self.log['episode'].append(episode)
                     self.log['reward'].append(reward.to('cpu').numpy().item())
                     self.log['total_reward'].append(total_reward)
-                    self.log['loss'].append(loss.item())
-
+                    self.log['loss'].append(loss)
                     if self.steps_done % TARGET_UPDATE == 0:
                         self.target_net.load_state_dict(self.policy_net.state_dict())
 
                 if done:
                     break
-            if episode % 1 == 0:
+            if episode % 20 == 0:
                 print(
-                    f'Total steps: {self.steps_done} \t Episode: {episode}/{t} \t Total reward: {total_reward}'
+                    f'Total steps: {self.steps_done} \t Episode: {episode}/{t+1} \t Total reward: {total_reward}'
                 )
         env.close()
         return
@@ -209,7 +208,7 @@ class DQN:
         ax[2].set_xlabel('Episode #')
         if logarithmic:
             ax[2].set_yscale('log')
-        plt.savefig(f'training_per_episode_log_{logarithmic}.png', dpi=300, bbox_inches='tight')
+        plt.savefig(f'./figures/training_per_episode_log_{logarithmic}.png', dpi=300, bbox_inches='tight')
         plt.show()
 
         fig, ax = plt.subplots(1, 3, figsize=(20, 5))
@@ -227,6 +226,6 @@ class DQN:
             ax[1].set_xscale('log')
             ax[2].set_xscale('log')
             ax[2].set_yscale('log')
-        plt.savefig(f'training_per_step_log_{logarithmic}.png', dpi=300, bbox_inches='tight')
+        plt.savefig(f'./figures/training_per_step_log_{logarithmic}.png', dpi=300, bbox_inches='tight')
         plt.show()
         return
